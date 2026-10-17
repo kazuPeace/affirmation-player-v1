@@ -34,6 +34,7 @@ flutter:
     - assets/bgm/
     - assets/voicevox/dict/open_jtalk_dic_utf_8-1.11/
     - assets/voicevox/models/
+    - assets/voicevox/licenses/
 
 flutter_launcher_icons:
   android: true

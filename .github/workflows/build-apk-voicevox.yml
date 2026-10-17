@@ -1,0 +1,97 @@
+name: Build affirmation player APK (VOICEVOX)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/voicevox-enabled]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.14'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+      - name: Install Android SDK, NDK, and CMake
+        run: sdkmanager "platforms;android-36" "build-tools;36.0.0" "ndk;28.2.13676358" "cmake;3.22.1"
+      - name: Fetch pinned VOICEVOX Android runtime
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          temp="$RUNNER_TEMP/voicevox"
+          mkdir -p "$temp" assets/voicevox/licenses assets/voicevox/models assets/voicevox/dict android/app/src/main/jniLibs/arm64-v8a
+
+          core_url="https://github.com/VOICEVOX/voicevox_core/releases/download/0.16.4/voicevox_core-android-arm64-0.16.4.zip"
+          curl --fail --location --retry 3 "$core_url" -o "$temp/core.zip"
+          echo '51357e6804901129e8684f404f00e107b024739cdd7619b367906f9f6f282271  '"$temp/core.zip" | sha256sum --check
+          unzip -q "$temp/core.zip" -d "$temp/core"
+          core_dir="$temp/core/voicevox_core-android-arm64-0.16.4"
+          cp "$core_dir/lib/libvoicevox_core.so" android/app/src/main/jniLibs/arm64-v8a/
+          cp "$core_dir/LICENSE" assets/voicevox/licenses/VOICEVOX_CORE_LICENSE.txt
+
+          onnx_url="https://github.com/VOICEVOX/onnxruntime-builder/releases/download/voicevox_onnxruntime-1.17.3/voicevox_onnxruntime-android-arm64-1.17.3.tgz"
+          curl --fail --location --retry 3 "$onnx_url" -o "$temp/onnxruntime.tgz"
+          echo '516a992cec029d4414260b602f38f388423517221ad5f81f0e1da4ada7104c60  '"$temp/onnxruntime.tgz" | sha256sum --check
+          mkdir -p "$temp/onnxruntime"
+          tar -xzf "$temp/onnxruntime.tgz" -C "$temp/onnxruntime"
+          onnx_dir="$temp/onnxruntime/voicevox_onnxruntime-android-arm64-1.17.3"
+          cp "$onnx_dir/lib/libvoicevox_onnxruntime.so" android/app/src/main/jniLibs/arm64-v8a/
+          cp "$onnx_dir/TERMS.txt" assets/voicevox/licenses/VOICEVOX_ONNXRUNTIME_TERMS.txt
+          cp "$onnx_dir/third-party-notices.html" assets/voicevox/licenses/VOICEVOX_ONNXRUNTIME_NOTICES.html
+
+          curl --fail --location --retry 3 \
+            https://github.com/VOICEVOX/voicevox_core/releases/download/0.16.4/download-linux-x64 \
+            -o "$temp/download-linux-x64"
+          echo '9d53fe39b3a6de7ebd10b779533ad8bd0ee09bc23ce8a9337eef23d281d28a1b  '"$temp/download-linux-x64" | sha256sum --check
+          chmod +x "$temp/download-linux-x64"
+          "$temp/download-linux-x64" --only dict --output "$temp/data"
+          cp -R "$temp/data/dict/open_jtalk_dic_utf_8-1.11" assets/voicevox/dict/
+
+          for item in '0 917e592cae92a02fb7668bd9e168df4e39c8ab2f5302c2be71906c70ec4e2df2' \
+                      '13 f083dd1c3b67091fbbf1839c97d0cf817dbfae40ddc4fa8e88236ce6e2abe55d' \
+                      '19 d6c8096606d462a26c7e7b093e0eab4452e52efd42af29e9cdc989e022ea9f0e' \
+                      '21 da1172da295f89e9733cde36468365f573133e1903a4fe9cd47b2ba4bdadbeac'; do
+            read -r model digest <<< "$item"
+            file="assets/voicevox/models/${model}.vvm"
+            curl --fail --location --retry 3 \
+              "https://github.com/VOICEVOX/voicevox_vvm/releases/download/0.16.4/${model}.vvm" \
+              -o "$file"
+            echo "$digest  $file" | sha256sum --check
+          done
+          curl --fail --location --retry 3 \
+            https://github.com/VOICEVOX/voicevox_vvm/releases/download/0.16.4/README.txt \
+            -o assets/voicevox/models/README.txt
+          curl --fail --location --retry 3 \
+            https://github.com/VOICEVOX/voicevox_vvm/releases/download/0.16.4/TERMS.txt \
+            -o assets/voicevox/models/TERMS.txt
+
+          test -f assets/voicevox/dict/open_jtalk_dic_utf_8-1.11/char.bin
+          test -f assets/voicevox/models/0.vvm
+          test -f android/app/src/main/jniLibs/arm64-v8a/libvoicevox_core.so
+          test -f android/app/src/main/jniLibs/arm64-v8a/libvoicevox_onnxruntime.so
+      - name: Get Flutter dependencies
+        run: flutter pub get
+      - name: Build ARM64 debug APK
+        run: flutter build apk --debug --target-platform android-arm64 --split-per-abi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: affirmation-player-v1-voicevox-arm64-debug-apk
+          path: build/app/outputs/flutter-apk/app-arm64-v8a-debug.apk
+          if-no-files-found: error

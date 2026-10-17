@@ -33,6 +33,12 @@ class SettingsScreen extends ConsumerWidget {
                 child: const Text('再確認'),
               ),
             ),
+            const ListTile(
+              title: Text('VOICEVOX 音声のクレジット'),
+              subtitle: Text(
+                '生成した音声をアプリ外で利用・公開する場合は「VOICEVOX:話者名」を表示し、同梱の音声モデル利用規約に従ってください。',
+              ),
+            ),
             ListTile(
               title: const Text('音声キャッシュ削除'),
               subtitle: Text('保存先: ${documentsDir.path}/audio_cache'),

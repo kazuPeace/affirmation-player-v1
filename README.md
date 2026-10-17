@@ -1,5 +1,7 @@
 # アファメーションプレーヤV1
 
+> Branch `codex/voicevox-enabled` builds an ARM64 Android APK with VOICEVOX CORE 0.16.4, VOICEVOX ONNX Runtime 1.17.3, Open JTalk dictionary, and the 0/13/19/21 VVM models. The CI workflow downloads pinned official release assets at build time; they are not committed to this repository. The TTS-only build remains on `codex/buildable-tts-only`.
+
 音楽プレーヤー風 UI でアファメーションを選択・編集・再生できる Flutter アプリです。  
 VOICEVOX ローカル音声生成、通常 TTS、BGM 重畳、バックグラウンド再生、通知操作、ロック画面操作、ヘッドホン抜去時停止をまとめて扱える構成にしています。
 
