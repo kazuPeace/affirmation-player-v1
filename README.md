@@ -1,5 +1,7 @@
 # アファメーションプレーヤV1
 
+> Build branch `codex/buildable-tts-only` packages the Android app with device TTS and bundled BGM. The private VOICEVOX Core, dictionary, and VVM files are not in this public repository, so local VOICEVOX is unavailable in that build; the app falls back to device TTS.
+
 音楽プレーヤー風 UI でアファメーションを選択・編集・再生できる Flutter アプリです。  
 VOICEVOX ローカル音声生成、通常 TTS、BGM 重畳、バックグラウンド再生、通知操作、ロック画面操作、ヘッドホン抜去時停止をまとめて扱える構成にしています。
 

@@ -10,12 +10,6 @@ android {
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
-    externalNativeBuild {
-        cmake {
-            path = file("src/main/cpp/CMakeLists.txt")
-        }
-    }
-
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -36,11 +30,6 @@ android {
             abiFilters += listOf("arm64-v8a", "x86_64")
         }
 
-        externalNativeBuild {
-            cmake {
-                abiFilters += listOf("arm64-v8a", "x86_64")
-            }
-        }
     }
 
     packaging {
