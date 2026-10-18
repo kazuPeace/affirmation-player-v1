@@ -89,9 +89,9 @@ jobs:
       - name: Get Flutter dependencies
         run: flutter pub get
       - name: Build ARM64 debug APK
-        run: flutter build apk --debug --target-platform android-arm64 --split-per-abi
+        run: flutter build apk --debug --target-platform android-arm64
       - uses: actions/upload-artifact@v4
         with:
           name: affirmation-player-v1-voicevox-arm64-debug-apk
-          path: build/app/outputs/flutter-apk/app-arm64-v8a-debug.apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
           if-no-files-found: error
