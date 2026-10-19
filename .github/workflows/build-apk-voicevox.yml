@@ -53,6 +53,8 @@ jobs:
           tar -xzf "$temp/onnxruntime.tgz" -C "$temp/onnxruntime"
           onnx_dir="$temp/onnxruntime/voicevox_onnxruntime-android-arm64-1.17.3"
           cp "$onnx_dir/lib/libvoicevox_onnxruntime.so" android/app/src/main/jniLibs/arm64-v8a/
+          cp "$ANDROID_HOME/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/libc++_shared.so" \
+            android/app/src/main/jniLibs/arm64-v8a/
           cp "$onnx_dir/TERMS.txt" assets/voicevox/licenses/VOICEVOX_ONNXRUNTIME_TERMS.txt
           cp "$onnx_dir/third-party-notices.html" assets/voicevox/licenses/VOICEVOX_ONNXRUNTIME_NOTICES.html
 
@@ -86,6 +88,7 @@ jobs:
           test -f assets/voicevox/models/0.vvm
           test -f android/app/src/main/jniLibs/arm64-v8a/libvoicevox_core.so
           test -f android/app/src/main/jniLibs/arm64-v8a/libvoicevox_onnxruntime.so
+          test -f android/app/src/main/jniLibs/arm64-v8a/libc++_shared.so
       - name: Get Flutter dependencies
         run: flutter pub get
       - name: Build ARM64 debug APK
